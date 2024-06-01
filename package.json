@@ -1,0 +1,11 @@
+{
+  "name": "backend-learning",
+  "version": "1.0.0",
+  "description": "Started learning backend to become full stack developer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "waris-ansar",
+  "license": "ISC"
+}

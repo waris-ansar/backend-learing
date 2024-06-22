@@ -13,8 +13,8 @@ connectDB()
       throw errror;
     });
     app.listen(
-      process.env.PORT || 8000,
-      console.log("server is runnin at the port 8000")
+      process.env.PORT,
+      console.log(`server is runnin at the port ${process.env.PORT || 8000}`)
     );
   })
   .catch((err) => console.log("connection failed", err));

@@ -6,7 +6,7 @@ const userSchema = new Schema(
   {
     userName: {
       type: String,
-      required: true,
+      required: [true, "User name is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -14,20 +14,20 @@ const userSchema = new Schema(
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
     },
     fullName: {
       type: String,
-      required: true,
+      required: [true, "Full name is required"],
       trim: true,
       index: true,
     },
     avatar: {
       type: String,
-      required: true,
+      required: [true, "Avatar is required"],
     },
     coverImage: {
       type: String,

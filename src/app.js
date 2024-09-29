@@ -23,6 +23,6 @@ import userRouter from "./routes/user.routes.js";
 // routes declartion
 app.use(`${BASE_PREFIX_VERSION}/users`, userRouter);
 
-app.use(handleErrorResponse);
+// app.use(handleErrorResponse);
 
 export { app };

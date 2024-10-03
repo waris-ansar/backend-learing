@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { emailSender } from "../utils/emailSender.js";
+import { Verifaction } from "../models/verification.model.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -20,6 +21,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   const { userName, email, fullName, password } = req.body;
+  const verificationCode = Math.floor(Math.random() * 9999);
   if (
     [fullName, email, userName, password].some(
       (field) => !field || field?.trim() === ""
@@ -67,7 +69,11 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
   });
 
-  await emailSender(user.email, "Verify your email", "123456");
+  await emailSender(user.email, "Verify your email", verificationCode);
+  await Verifaction.create({
+    verificationCode,
+    verificationCodeExpiry: new Date(Date.now() + 3600000),
+  });
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );

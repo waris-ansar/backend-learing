@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import { emailSender } from "../utils/emailSender.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -36,8 +36,6 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User alreday exist with given username or email");
   }
 
-  console.log(req.files, "files");
-
   // const avatarLocalPath = req.files?.avatar[0]?.path;
   const avatarLocalPath = req.files?.avatar[0]?.path;
   let coverImageLocalPath;
@@ -69,6 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
   });
 
+  await emailSender(user.email, "Verify your email", "123456");
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );

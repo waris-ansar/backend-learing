@@ -5,6 +5,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { emailSender } from "../utils/emailSender.js";
 import { Verifaction } from "../models/verification.model.js";
+import moment from "moment";
+import { cookieOptions } from "../constants.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -71,8 +73,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
   await emailSender(user.email, "Verify your email", verificationCode);
   await Verifaction.create({
+    userId: user._id,
     verificationCode,
-    verificationCodeExpiry: new Date(Date.now() + 3600000),
+    verificationCodeExpiry: moment().add(1, "hour").valueOf(),
   });
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
@@ -114,8 +117,6 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id
   );
 
-  // console.log(accessToken, refreshToken, "access and refresh token");
-
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
@@ -138,4 +139,49 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser };
+const verifyUser = asyncHandler(async (req, res) => {
+  const { email, verificationCode } = req.body;
+  const user = await User.findOne({ email });
+
+  const storedVerificationData = await Verifaction.findOne({
+    userId: user._id,
+  });
+
+  if (!storedVerificationData) {
+    throw new ApiError(404, "No Verification code is available for this user.");
+  }
+
+  if (verificationCode !== storedVerificationData.verificationCode) {
+    throw new ApiError(401, "Invalid verification code!");
+  }
+
+  if (moment().isAfter(storedVerificationData.verificationCodeExpiry)) {
+    throw new ApiError(401, "Code is expired!");
+  }
+
+  const verifiedUser = await User.findByIdAndUpdate(
+    user._id,
+    {
+      isVerified: true,
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .json(
+      new ApiResponse(
+        200,
+        { verifiedUser, accessToken, refreshToken },
+        "User verified successfully"
+      )
+    );
+});
+
+export { registerUser, loginUser, verifyUser };

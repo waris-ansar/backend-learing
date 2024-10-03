@@ -9,7 +9,6 @@ const generateAccessAndRefreshToken = async (userId) => {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
@@ -37,15 +36,17 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User alreday exist with given username or email");
   }
 
+  console.log(req.files, "files");
+
   // const avatarLocalPath = req.files?.avatar[0]?.path;
   const avatarLocalPath = req.files?.avatar[0]?.path;
   let coverImageLocalPath;
   if (
     req.files &&
-    Array.isArray(req.files.coverImage) &&
-    req.files.coverImage.length > 0
+    Array.isArray(req.files?.coverImage) &&
+    req.files.coverImage?.length > 0
   ) {
-    coverImageLocalPath = req.files.coverImage[0].path;
+    coverImageLocalPath = req.files?.coverImage[0].path;
   }
 
   if (!avatarLocalPath) {
@@ -84,7 +85,9 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, userName, password } = req.body;
 
-  if (!email || !userName) {
+  console.log(email, userName, password);
+
+  if (!(email || userName)) {
     throw new ApiError(400, "Username or email is required!");
   }
 
@@ -106,7 +109,7 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id
   );
 
-  console.log(accessToken, refreshToken, "access and refresh token");
+  // console.log(accessToken, refreshToken, "access and refresh token");
 
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"

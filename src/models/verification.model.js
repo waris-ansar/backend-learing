@@ -9,9 +9,8 @@ const VerificationSchema = new mongoose.Schema({
     type: Date,
     default: () => new Date(),
   },
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+  userId: {
+    type: mongoose.ObjectId,
   },
 });
 
